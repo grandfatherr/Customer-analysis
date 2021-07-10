@@ -1,0 +1,558 @@
+---
+title: "Kira Plastinina's customer-cluster analysis"
+author: "Edwin Mutuma"
+date: "7/10/2021"
+output: html_document
+---
+
+# PROBLEM DEFINITION
+## **a) Specifying the Question**
+Kira Plastinina is a Russian brand whose sales and Marketing team would like to understand their customer’s behavior from data that they have collected over the past year.
+
+## **b) Defining the metrics for success**
+Draw insights from the cluster analysis performed on the data
+
+## **c) Understanding the context**
+Kira Plastinina is a Russian fashion designer whose brand is sold through a defunct chain of retail stores in Russia, Ukraine, Kazakhstan, Belarus, China, Philippines, and Armenia. The marketing team wants an analysis carried out on their customers and insights drawn from various attributes and features of their customers.
+
+## **d) Recording the Experimental Design**
+* Define the question, the metric for success, the context, experimental design taken.
+* Read and explore the given dataset.
+* Find and deal with outliers, anomalies, and missing data within the dataset.
+* Perform univariate and bivariate analysis.
+* Perform clustering stating insights drawn from your analysis and visualizations.
+
+## **e) Relevance of the data**
+The data presented was relevant and useful in performing cluster analysis
+
+
+```{r}
+library(dplyr)
+library(ggplot2)
+```
+
+## Importing data
+```{r}
+# importing our data
+# reading our data
+kp <- read.csv('http://bit.ly/EcommerceCustomersDataset')
+```
+
+
+## Previewing the data
+```{r}
+# Previewing the top 6 entries
+head(kp)
+```
+
+```{r}
+# Previewing the datatypes of our columns
+lapply(kp,class)
+```
+
+```{r}
+# Checking the shape of the dataset
+dim(kp)
+```
+
+```{r}
+# Checking the structure of the data we have
+str(kp)
+```
+
+
+## Data Cleaning
+```{r}
+# Checking for null values in the data
+colSums(is.na(kp))
+```
+
+```{r}
+#Dropping the rows with the null values
+kp <- na.omit(kp)
+
+# Checking to ensure none are left
+sum(is.na(kp))
+```
+
+```{r}
+# Checking for whether we have any duplicate rows in the dataset
+sum(duplicated(kp))
+```
+
+```{r}
+# Dealing with the duplicates
+kp <- distinct(kp)
+sum(duplicated(kp))
+```
+
+```{r}
+# Checking the shape of the dataset
+dim(kp)
+```
+
+```{r}
+boxplot(kp$Administrative,
+        main="Boxplot for Administrative",
+        col = "orange", 
+        border="brown", 
+        horizontal=T, 
+        notch=T)
+```
+
+```{r}
+boxplot(kp$Administrative_Duration,
+        main="Boxplot for Administrative_Duration",
+        col = "orange", 
+        border="brown", 
+        horizontal=T, 
+        notch=T)
+```
+
+```{r}
+boxplot(kp$Informational_Duration,
+        main="Boxplot for Informational_Duration",
+        col = "orange", 
+        border="brown", 
+        horizontal=T, 
+        notch=T)
+```
+
+```{r}
+boxplot(kp$ProductRelated,
+        main="Boxplot for ProductRelated",
+        col = "orange", 
+        border="brown", 
+        horizontal=T, 
+        notch=T)
+```
+
+```{r}
+boxplot(kp$ProductRelated_Duration,
+        main="Boxplot for ProductRelated_Duration",
+        col = "orange", 
+        border="brown", 
+        horizontal=T, 
+        notch=T)
+```
+
+```{r}
+boxplot(kp$BounceRates,
+        main="Boxplot for BounceRates",
+        col = "orange", 
+        border="brown", 
+        horizontal=T, 
+        notch=T)
+```
+
+```{r}
+boxplot(kp$ExitRates,
+        main="Boxplot for ExitRates",
+        col = "orange", 
+        border="brown", 
+        horizontal=T, 
+        notch=T)
+```
+
+```{r}
+boxplot(kp$PageValues,
+        main="Boxplot for PageValues",
+        col = "orange", 
+        border="brown", 
+        horizontal=T, 
+        notch=T)
+```
+
+```{r}
+boxplot(kp$SpecialDay,
+        main="Boxplot for SpecialDay",
+        col = "orange", 
+        border="brown", 
+        horizontal=T, 
+        notch=T)
+```
+
+```{r}
+boxplot(kp$OperatingSystems,
+        main="Boxplot for OperatingSystems",
+        col = "orange", 
+        border="brown", 
+        horizontal=T, 
+        notch=T)
+```
+
+```{r}
+boxplot(kp$OperatingSystems,main="Boxplot for OperatingSystems",col = "orange", border="brown", horizontal=T, notch=T)
+```
+
+```{r}
+boxplot(kp$Browser,
+        main="Boxplot for Browser",
+        col = "orange", 
+        border="brown", 
+        horizontal=T, 
+        notch=T)
+```
+
+```{r}
+boxplot(kp$Region,
+        main="Boxplot for Region",
+        col = "orange", 
+        border="brown", 
+        horizontal=T, 
+        notch=T)
+```
+
+```{r}
+boxplot(kp$Region,
+        main="Boxplot for Region",
+        col = "orange", 
+        border="brown", 
+        horizontal=T, 
+        notch=T)
+```
+
+```{r}
+boxplot(kp$TrafficType,main="Boxplot for TrafficType",col = "orange", border="brown", horizontal=T, notch=T)
+```
+
+```{r}
+boxplot(kp$Weekend,
+        main="Boxplot for Weekend",
+        col = "orange", 
+        border="brown", 
+        horizontal=T, 
+        notch=T)
+```
+
+```{r}
+boxplot(kp$Revenue,
+        main="Boxplot for Revenue",
+        col = "orange", 
+        border="brown", 
+        horizontal=T, 
+        notch=T)
+```
+
+
+## Exploratory Data Analysis
+
+```{r}
+# Mean of various columns
+mean <- colMeans(kp[sapply(kp, is.numeric)])
+mean
+```
+
+```{r}
+# Median
+library(robustbase)
+library(tidyverse)
+median <- kp%>%
+  select_if(is.numeric) %>%
+  as.matrix()%>%
+  colMedians()
+print(median)
+```
+
+```{r}
+# Finding the ranges of the different columns
+range(kp$Administrative)
+range(kp$Administrative_Duration)
+range(kp$Informational)
+range(kp$Informational_Duration)
+range(kp$ProductRelated)
+range(kp$ProductRelated_Duration)
+range(kp$BounceRates)
+range(kp$ExitRates)
+range(kp$PageValues)
+range(kp$SpecialDay)
+```
+
+```{r}
+# Finding the quantiles 
+quantile(kp$Administrative)
+quantile(kp$Administrative_Duration)
+quantile(kp$Informational)
+quantile(kp$Informational_Duration)
+quantile(kp$ProductRelated)
+quantile(kp$ProductRelated_Duration)
+quantile(kp$BounceRates)
+quantile(kp$ExitRates)
+quantile(kp$PageValues)
+quantile(kp$SpecialDay)
+```
+
+```{r}
+# Finding the standard deviation
+sd(kp$Administrative)
+sd(kp$Administrative_Duration)
+sd(kp$Informational)
+sd(kp$Informational_Duration)
+sd(kp$ProductRelated)
+sd(kp$ProductRelated_Duration)
+sd(kp$BounceRates)
+sd(kp$ExitRates)
+sd(kp$PageValues)
+sd(kp$SpecialDay)
+```
+
+```{r}
+# Finding the variance
+var(kp$Administrative)
+var(kp$Administrative_Duration)
+var(kp$Informational)
+var(kp$Informational_Duration)
+var(kp$ProductRelated)
+var(kp$ProductRelated_Duration)
+var(kp$BounceRates)
+var(kp$ExitRates)
+var(kp$PageValues)
+var(kp$SpecialDay)
+```
+
+```{r}
+month.freq <- table(kp$Month)
+sort(month.freq, decreasing = TRUE)[1:5]
+#Bar chart  
+options(repr.plot.width = 10, repr.plot.height = 10)
+barplot(c(month.freq), main="A barchart of months.",
+        xlab="months",
+        ylab="frequency",
+        cex.main=2, cex.lab=1.7,cex.sub=1.2,
+        col=c("blue"))
+```
+
+```{r}
+# Bar chart of Operating systems
+os.freq <- table(kp$OperatingSystems)
+sort(os.freq, decreasing = TRUE)[1:5]
+options(repr.plot.width = 10, repr.plot.height = 10)
+barplot(c(os.freq), main="A barchart of operating systems.",
+        xlab="operating systems",
+        ylab="frequency",
+        cex.main=2, cex.lab=1.7,cex.sub=1.2,
+        col=c("green"))
+```
+
+```{r}
+# Bar chart for the region
+region.freq <- table(kp$Region)
+sort(region.freq, decreasing = TRUE)[1:5]
+options(repr.plot.width = 10, repr.plot.height = 10)
+barplot(c(region.freq), main="A barchart of regions.",
+        xlab="region",
+        ylab="frequency",
+        cex.main=2, cex.lab=1.7,cex.sub=1.2,
+        col=c("green"))
+```
+
+```{r}
+#frequency table of visitor type
+visitor.freq <- table(kp$VisitorType)
+sort(visitor.freq, decreasing = TRUE)[1:5]
+options(repr.plot.width = 10, repr.plot.height = 10)
+barplot(c(visitor.freq), main="A barchart of visitor types.",
+        xlab="visitor types",
+        ylab="frequency",
+        cex.main=2, cex.lab=1.7,cex.sub=1.2,
+        col=c("green"))
+```
+
+```{r}
+#frequency table of weekend
+weekend.freq <- table(kp$Weekend)
+sort(weekend.freq, decreasing = TRUE)[1:5]
+options(repr.plot.width = 10, repr.plot.height = 10)
+barplot(c(weekend.freq), main="A barchart of weekend.",
+        xlab="weekend",
+        ylab="frequency",
+        cex.main=2, cex.lab=1.7,cex.sub=1.2,
+        col=c("blue", "green"))
+```
+
+```{r}
+#Admin histogram.
+hist(kp$Administrative)
+```
+
+```{r}
+#  Histogram of administrative duration 
+hist(kp$Administrative_Duration)
+```
+
+```{r}
+# Histogram of informational 
+hist(kp$Informational)
+```
+
+```{r}
+# Histogram of informational duration 
+hist(kp$Informational_Duration)
+```
+
+```{r}
+# Histogram of product related 
+hist(kp$ProductRelated)
+```
+
+```{r}
+# Histogram of product related duration 
+hist(kp$ProductRelated_Duration)
+```
+
+```{r}
+# Bounce rates histogram
+hist(kp$BounceRates)
+```
+
+```{r}
+# Exit rates histogram
+hist(kp$ExitRates)
+```
+
+```{r}
+# page values histogram
+hist(kp$PageValues)
+```
+
+```{r}
+# special day histogram
+hist(kp$SpecialDay)
+```
+## Observations
+1. The months of May, November, March and December have the most web page visits.
+2. Type 2 operating systenm is the most common amongst the users.
+3. Most users preferred the type 2 Browser.
+4. Region 1 registered the highest number of individuals in the data
+5. The website looks to be frequented by previous users of the site as compared to the pther visitors.
+6. Most web page visits were made during the weekday.
+
+```{r}
+#finding the covariance
+cov <- cov(kp[,unlist(lapply(kp, is.numeric))])
+cov
+```
+
+```{r}
+#selecting the logical true values from revenue column
+revenue <- kp[kp$Revenue == 'TRUE',]
+```
+
+```{r}
+month_freq <- table(revenue$Month)
+sort(month_freq, decreasing = TRUE)[1:5]
+options(repr.plot.width = 10, repr.plot.height = 10)
+barplot(c(month_freq), main="Months vs revenues.",
+        xlab="months",
+        ylab="revenue",
+        cex.main=2, cex.lab=1.7,cex.sub=1.2,
+        col=c("light green"))
+```
+November, which happened to be among the months with the highest visits, registered the most revenues
+
+
+```{r}
+# Region that brought in the most revenues
+region_freq <- table(revenue$Region)
+sort(region_freq, decreasing = TRUE)[1:5]
+options(repr.plot.width = 10, repr.plot.height = 10)
+barplot(c(region_freq), main="Regions vs the contribution to revenue.",
+        xlab="region",
+        ylab="revenue",
+        cex.main=2, cex.lab=1.7,cex.sub=1.2,
+        col=c("cyan"))
+```
+Region 1 brings in the most revenue followed by region 3
+
+
+```{r}
+# The contributions of the different visitors
+visitor_freq <- table(revenue$VisitorType)
+sort(visitor_freq, decreasing = TRUE)[1:5]
+options(repr.plot.width = 10, repr.plot.height = 10)
+barplot(c(visitor_freq), main="Visitors and the contributions.",
+        xlab="visitor types",
+        ylab="revenue",
+        cex.main=2, cex.lab=1.7,cex.sub=1.2,
+        col=c("light blue"))
+```
+Due to the fact that returning visitors are the most visitors on the site, it makes sense that they are the ones that bring in the most revenue
+
+
+## IMPLEMENTING THE SOLUTION
+```{r}
+#removing the revenue column
+kp.new <- kp[,1:17]
+head(kp.new)
+kp.rev <- kp$Revenue
+kp.new[,12:15] <- sapply(kp.new[,12:15], as.character)
+kp.new[,12:15] <- sapply(kp.new[,12:15], as.numeric)
+head(kp.new)
+```
+
+```{r}
+#one hot encoding factor columns
+library(caret)
+dmy = dummyVars(" ~ .", data = kp.new)
+kp.encod = data.frame(predict(dmy, newdata = kp.new))
+str(kp.encod)
+dim(kp.encod)
+```
+
+```{r}
+#normalizing data
+normalize <- function(x){
+  return ((x-min(x)) / (max(x)-min(x)))
+}
+normalize(kp.encod)
+```
+
+### K-Means
+```{r}
+# Applying the K-means clustering algorithm with no. of centroids(k)=3
+# ---
+# 
+result<- kmeans(kp.encod,10) 
+# Previewing the no. of records in each cluster
+# 
+result$size
+result$cluster
+result$centers
+```
+```{r}
+# Verifying the results of clustering
+# ---
+# 
+par(mfrow = c(2,2), mar = c(5,4,2,2))
+# Plotting to see how various variable data points have been distributed in clusters
+plot(kp.encod[c(1,2,3,4,5)], col = result$cluster)
+```
+
+### Hierachical clustering
+```{r}
+# First we use the dist() function to compute the Euclidean distance between observations, 
+# d will be the first argument in the hclust() function dissimilarity matrix
+# ---
+#
+d <- dist(kp.encod, method = "euclidean")
+# We then hierarchical clustering using the Ward's method
+# ---
+# 
+res.hc <- hclust(d, method = "ward.D2" )
+res.hc
+```
+
+```{r}
+# plotting the obtained dendrogram
+# ---
+# 
+plot(res.hc, cex = 0.6, hang = -1)
+```
+
+## RECOMMENDATIONS
+Owing to the fact that the aim of any business is to generate more revenue than the cost it incurs, Kira Plastinina's Sales and Marketing should:
+1. Target to increase their reach in regions 1 and 3 as they seem to be the regions with the most visits
+2. Market themselves more in the months of May, November, December and March as these are the months with the most hits.
+3, Ensure that in the month of November they have majority of their items up on the website as the most revenue is generated around that time.
+4. Ensure their site is running targeted ads over the weekday as this is the period when most of their clients are on
+5. Strive to ensure they retain every customer who cicks their site as this forms the bulk of their revenue as well as the site visits

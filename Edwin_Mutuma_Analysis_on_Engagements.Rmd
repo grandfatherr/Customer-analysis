@@ -1,0 +1,444 @@
+---
+title: "Analysis on engagements on ads"
+author: "Edwin Mutuma"
+date: "7/2/2021"
+---
+
+## a) Specifying the Data Analytic Question
+To identify which individuals are are most likely to click on ads relating to an online cryptography course.
+
+## b) Defining the Metric for Success
+The project will be a success if the analysis narrows down to a set of individuals that have a high likelihood of clicking on the ads relating to an online cryptography course. Being able to come up with the best fits for these campaigns will be a huge success factor.
+
+## c) Understanding the context
+A Kenyan entrepreneur has created an online cryptography course and would want to advertise it on her blog. She seeks to target a set of individuals who can take up the course and a  result, she has employed the services of a a data scientist to perform analysis and recommend on the individuals that have a high likelihood of clicking on ads on her blog.
+
+## d) Recording the Experimental Design
+For the project to be a success, the following steps will be followed:
+1) Reading the data.
+2) Finding and dealing with outliers, anomalies, and missing data within the dataset.
+3) Performing  univariate and bivariate analysis.
+4) Providing a conclusion and recommendation.
+
+## LOADING THE DATA
+```{r}
+ads <- read.csv("C:/Users/EMBU URBAN/Downloads/advertising.csv")
+```
+
+## CHECKING THE DATASET
+Look at the top 5 entries of our dataset
+```{r}
+head(ads)
+```
+
+Looking at the bottom part of the data
+```{r}
+tail(ads)
+```
+
+Look at the structure of the dataset
+```{r}
+str(ads)
+```
+
+Look at the description of the data.
+```{r}
+summary(ads)
+```
+
+```{r}
+# Determining the no. of records in our dataset
+#
+dim(ads)
+```
+
+```{r}
+# Checking the class of ads
+class(ads)
+```
+
+## TIDYING THE DATASET
+```{r}
+# Finding if there are any null values in the data
+is.na(ads)
+```
+```{r}
+# Checking to see the specific number of missing values in our data
+sum(is.na(ads))
+```
+```{r}
+colSums(is.na(ads))
+```
+
+There are no missing values in our data.
+
+Checking for the consistency of our data
+```{r}
+duplicated(ads)
+```
+
+```{r}
+# Checking to see the exact number of the duplicated values in our data
+sum(duplicated(ads))
+```
+Checking for outliers
+Plotting boxplots
+```{r}
+boxplot(ads$Age,
+         main = "Age of the targets",
+         col = "Blue",
+         border = "Black",
+         horizontal = T,
+         notch = T,
+         ylab = "",
+         xlab = "age")
+```
+```{r}
+boxplot(ads$Area.Income,
+        main = "The income distributions",
+        col = "Orange",
+        border = "Red",
+        ylab = "Income")
+```
+From the above plots, we can see that the incomes of the various users varied. However, the outliers we can see from the same are very well within the range given incomes of different people vary with different circumstances.
+
+
+```{r}
+boxplot(ads$Daily.Internet.Usage,
+        main = "Internet usage",
+        xlab = "Internet usage",
+        horizontal = T,
+        notch = T,
+        col = "Orange",
+        border = "Brown")
+```
+
+A couple of observations can be made from the dataset cleaning:
+1) From the analysis performed above, there were no missing values.
+2) All records were unique indicating that we had no duplicates in the data.
+3) From the above plots, we can see that the incomes of the various users varied. However, the outliers we can see from the same are very well within the range given incomes of different people vary with different circumstances
+
+## PERFORMING EDA
+## UNIVARIATE ANALYSIS
+```{r}
+summary(ads)
+library(psych)
+describe(ads)
+```
+
+```{r}
+# Getting the means
+colMeans(ads[sapply(ads,is.numeric)])
+```
+1. On average, the daily time spent on the site is 65
+2. The average age of the user is 36 years.
+3. The average area income is 55000.
+
+```{r}
+# Mode
+getmode <- function(v) {
+   uniqv <- unique(v)
+   uniqv[which.max(tabulate(match(v, uniqv)))]
+}
+
+getmode(ads$Age)
+getmode(ads$City)
+getmode(ads$Male)
+getmode(ads$Country)
+```
+1. The age that is the most common of the users is 31 years
+2. The City with the most repeat users is Lisamouth
+3. The country that's most repeated is Czech Republic
+4. The most common gender in the data is Female
+
+```{r}
+median(ads$Daily.Time.Spent.on.Site)
+median(ads$Age)
+median(ads$Area.Income)
+median(ads$Daily.Internet.Usage)
+```
+
+```{r}
+### Range
+range(ads$Daily.Time.Spent.on.Site)
+range(ads$Age)
+range(ads$Area.Income)
+range(ads$Daily.Internet.Usage)
+```
+1. The minimum time spent on the site is 32.60 while the maximum time spent on the site is 91.43
+2. The least age of the users is 19 while the largest age is 61
+3. Area income ranges between 13996.5 and 79484.6
+
+```{r}
+# Quantiles
+quantile(ads$Daily.Time.Spent.on.Site)
+quantile(ads$Age)
+quantile(ads$Area.Income)
+quantile(ads$Daily.Internet.Usage)
+```
+
+```{r}
+### Variance
+var(ads$Daily.Time.Spent.on.Site)
+var(ads$Age)
+var(ads$Area.Income)
+var(ads$Daily.Internet.Usage)
+```
+
+```{r}
+### Standard Deviation
+sd(ads$Daily.Time.Spent.on.Site)
+sd(ads$Age)
+sd(ads$Area.Income)
+sd(ads$Daily.Internet.Usage)
+```
+
+```{r}
+# Histograms
+hist(ads$Daily.Time.Spent.on.Site)
+```
+
+```{r}
+hist(ads$Age)
+```
+
+```{r}
+hist(ads$Area.Income)
+```
+
+```{r}
+hist(ads$Daily.Internet.Usage)
+```
+
+
+```{r}
+# top 10 countries that accrue high average income
+avg.country = aggregate(ads$Area.Income, by=list(ads$Country), FUN=mean)
+cou.top10<-head(avg.country[order(avg.country$x,decreasing = TRUE), ],10)
+barplot(cou.top10$x,main = "countries that accrue high average income",
+        xlab = "area income",
+        density = 80,
+        las=1,
+        names=cou.top10$Group.1,
+        horiz = TRUE)
+
+```
+
+```{r}
+# Creating a dataframe for those who clicked the ad
+clicks <- ads[ads$Clicked.on.Ad==1,]
+head(clicks)
+
+```
+
+```{r}
+
+# bar plot
+## distribution of gender for those who clicked ads
+gender_dist<- table(clicks$Male)
+label<- c("female","male")
+barplot(gender_dist,names.arg=label,main="gender distribution")
+```
+
+
+```{r}
+## age distribution
+age_dist<- table(clicks$Age)
+barplot(age_dist,main="age distribution")
+```
+
+```{r}
+## distribution for countries
+topcountries<- head(sort(table(clicks$Country),decreasing=TRUE),n=10)
+barplot(topcountries,las=1, main="top countries",horiz=TRUE)
+```
+
+```{r}
+## distribution for countries
+topcities<- head(sort(table(clicks$City),decreasing=TRUE),n=10)
+barplot(topcities,las=1, main="top cities",horiz=TRUE)
+```
+
+```{r}
+hist(clicks$Area.Income)
+```
+1. Australia, Ethiopia and Turkey top the list of the countries with the most clicks.
+2. People aged 45 had the most clicks among all closely followed by those aged 36 and 38 years.
+3. Females beat their male counterparts in the number of ads clicked.
+4. The areas that have an income between 40000 and 70000 have the most clicks on the ads
+
+## BIVARIATE ANALYSIS
+```{r}
+# correlation heatmap for numerical columns 
+cor(ads[sapply(ads,is.numeric)])
+```
+
+```{r}
+### Covariance between the Daily_Time_Spent_on_Site and Clicked_on_Ad
+cov(ads$Daily.Time.Spent.on.Site, ads$Clicked.on.Ad)
+```
+
+```{r}
+### Covariance between the Age and Area Income and Clicked_on_Ad
+cov(ads$Age, ads$Clicked.on.Ad)
+```
+
+```{r}
+### Covariance between the Area_Income and Age and Clicked_on_Ad
+cov(ads$Area.Income, ads$Clicked.on.Ad)
+```
+
+```{r}
+## Scatter plots
+plot(ads$Clicked.on.Ad, ads$Daily.Time.Spent.on.Site, xlab="Clicked on Ad", ylab="Daily time spent on site")
+```
+
+```{r}
+plot(ads$Clicked.on.Ad, ads$Age, xlab="Clicked on Ad", ylab="Age")
+```
+
+```{r}
+plot(ads$Clicked.on.Ad, ads$Area.Income, xlab="Clicked on Ad", ylab="Area Income")
+```
+
+```{r}
+plot(ads$Daily.Time.Spent.on.Site, ads$Age, xlab="Daily.Time.Spent.On.Site", ylab="Age")
+
+```
+
+```{r}
+plot(ads$Age, ads$Area.Income, xlab="Age", ylab="Income")
+
+```
+
+
+## RECOMMENDATIONS
+1. Australia, Ethiopia and Turkey top the list of the countries with the most clicks. Target the users from these countries since we want to drive maximum engagements from the same.
+2. People aged 45 had the most clicks among all closely followed by those aged 36 and 38 years. Focus on these individuals to drive the most engagements from the ads. By extension, we can observe that the most common age of the users is 31 years so it is only fair to assume that individuals sort of advanced in age are the best to drive engagements.
+3. Females beat their male counterparts in the number of ads clicked. It's therefore advisable to target the females more than their male counterparts.
+4. The areas that have an income between 40000 and 70000 have the most clicks on the ads. 
+5. The minimum time spent on the site is 32.60 while the maximum time spent on the site is 91.43. We should thereby target individuals active between these times
+6. The least age of the users is 19 while the largest age is 61
+7. Area income ranges between 13996.5 and 79484.6
+
+## MODELLING
+# K-Nearest Neighbors
+```{r}
+# Convert the labels to categorical
+ads$Clicked.on.Ad <- factor(ads$Clicked.on.Ad)
+```
+
+```{r}
+round(prop.table(table(ads$Clicked.on.Ad)) * 100, digits = 1)
+```
+We don't have a case of class imbalance in our labels.
+
+```{r}
+# Let's look at the features we'll be using in our modelling
+head(ads)
+```
+
+```{r}
+unique(ads[c("City")])
+```
+
+```{r}
+unique(ads[c("Country")])
+```
+
+```{r}
+# Feature selection
+ad <- ads[c('Daily.Time.Spent.on.Site', 'Age', 'Area.Income', 'Daily.Internet.Usage', 'Male', 'Clicked.on.Ad')]
+```
+
+```{r}
+str(ad)
+```
+
+```{r}
+# Looking at the dataframe we'll be working with
+head(ad)
+```
+
+
+```{r}
+#Normalization
+normalize <- function(x) {
+return ((x - min(x)) / (max(x) - min(x))) }
+```
+
+We'll normalize our data but we will remove the Clicked on ad variable since it’s the response variable we will be predicting.
+```{r}
+ad_norm <- as.data.frame(lapply(ad[,1:5], normalize))
+
+# The normalized data
+head(ad_norm)
+```
+
+```{r}
+set.seed(1234)
+#random selection of 70% data.
+ad_data <- sample(1:nrow(ad_norm),size=nrow(ad_norm)*0.7,replace = FALSE) 
+ 
+train <- ad[ad_data,] 
+test <- ad[-ad_data,] 
+```
+
+```{r}
+train_label <- ad[ad_data,6]
+test_label <-ad[-ad_data,6]
+```
+
+##BUILDING THE MODEL
+```{r}
+# Load class package
+library(class)
+```
+
+```{r}
+#Find the number of observation
+NROW(train_label) 
+```
+
+```{r}
+# Instantiate the knn function
+knn <- knn(train=train, test=test, cl=train_label, k=26)
+
+# Load the library for checking the confusion matrix
+library(caret)
+
+# Accuracy
+library(e1071)
+confusionMatrix(table(knn,test_label))
+```
+
+## Challenging the solution using a different classification model
+# SVM
+```{r}
+intrain <- createDataPartition(y = ad$Clicked.on.Ad, p= 0.7, list = FALSE)
+train <- ad[intrain,]
+test <- ad[-intrain,]
+```
+
+```{r}
+# Ensuring the variabke to be predicted is categorical
+train[["Clicked.on.Ad"]] = factor(train[["Clicked.on.Ad"]])
+```
+
+```{r}
+# Train control to train data on different algorithm
+tr_ctl <- trainControl(method = "repeatedcv", number = 10, repeats = 5)
+
+library(kernlab)
+svm_Linear <- train(Clicked.on.Ad ~., data = train, method = "svmLinear",
+trControl=tr_ctl,
+preProcess = c("center", "scale"),
+tuneLength = 10)
+```
+
+```{r}
+test_pred <- predict(svm_Linear, newdata = test)
+confusionMatrix(table(test_pred, test$Clicked.on.Ad))
+```
+
+For our classification model, the best one in classifying whether an individual will click the ad or not we will go with SVM since it gives us the better accuracy compared to KNN.
